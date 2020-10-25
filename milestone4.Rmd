@@ -1,0 +1,55 @@
+---
+title: "Data for Final Project"
+author: "Ruy Martinez"
+date: "10/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tidyverse)
+```
+
+```{r}
+pop <- read.csv("data/2010racepop.csv") %>%
+  mutate(whitepercent = WHITE / TOTAL,
+         blackpercent = BLACK / TOTAL,
+         aianpercent = AIAN / TOTAL,
+         asianpercent = ASIAN / TOTAL,
+         nhpipercent = NHPI / TOTAL,
+         otherpercent = OTHER / TOTAL,
+         mixedpercent = MIXED / TOTAL,
+         latinopercent = LATINO / TOTAL)
+```
+
+
+```{r}
+covidrace <- read_csv("data/race_dat.csv",
+                      na = "",
+                      col_types = cols(Cases_White = "i",
+                                       Cases_Total = "i")) %>%
+  mutate(Date = lubridate::ymd(Date)) %>%
+  mutate(caseper_white = Cases_White / Cases_Total,
+         caseper_black = Cases_Black / Cases_Total,
+         caseper_latino = Cases_LatinX / Cases_Total,
+         caseper_asian = Cases_Asian / Cases_Total,
+         caseperaian = Cases_AIAN / Cases_Total,
+         casepernhpi = Cases_NHPI / Cases_Total,
+         casepermulti = Cases_Multiracial / Cases_Total,
+         caseperother = Cases_Other / Cases_Total,
+         caseperunkn = Cases_Unknown / Cases_Total,
+         caseperhispanic = Cases_Ethnicity_Hispanic / Cases_Total,
+         casepernonhis = Cases_Ethnicity_NonHispanic / Cases_Total,
+         deathper_white = Deaths_White / Deaths_Total,
+         deathper_black = Deaths_Black / Deaths_Total,
+         deathper_latino = Deaths_LatinX / Deaths_Total,
+         deathper_asian = Deaths_Asian / Deaths_Total,
+         deathperaian = Deaths_AIAN / Deaths_Total,
+         deathpernhpi = Deaths_NHPI / Deaths_Total,
+         deathpermulti = Deaths_Multiracial / Deaths_Total,
+         deathperother = Deaths_Other / Deaths_Total,
+         deathperunkn = Deaths_Unknown / Deaths_Total,
+         deathperhispanic = Deaths_Ethnicity_Hispanic / Deaths_Total,
+         deathpernonhis = Deaths_Ethnicity_NonHispanic / Deaths_Total,
+         deathperethunk = Deaths_Ethnicity_Unknown / Deaths_Total)
+```
