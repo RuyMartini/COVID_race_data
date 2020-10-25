@@ -19,7 +19,8 @@ pop <- read.csv("data/2010racepop.csv") %>%
          nhpipercent = NHPI / TOTAL,
          otherpercent = OTHER / TOTAL,
          mixedpercent = MIXED / TOTAL,
-         latinopercent = LATINO / TOTAL)
+         latinopercent = LATINO / TOTAL) %>%
+  write.csv("Milestone4/population_propotion")
 ```
 
 
@@ -27,7 +28,8 @@ pop <- read.csv("data/2010racepop.csv") %>%
 covidrace <- read_csv("data/race_dat.csv",
                       na = "",
                       col_types = cols(Cases_White = "i",
-                                       Cases_Total = "i")) %>%
+                                       Cases_Total = "i",
+                                       State = col_factor())) %>%
   mutate(Date = lubridate::ymd(Date)) %>%
   mutate(caseper_white = Cases_White / Cases_Total,
          caseper_black = Cases_Black / Cases_Total,
@@ -51,5 +53,6 @@ covidrace <- read_csv("data/race_dat.csv",
          deathperunkn = Deaths_Unknown / Deaths_Total,
          deathperhispanic = Deaths_Ethnicity_Hispanic / Deaths_Total,
          deathpernonhis = Deaths_Ethnicity_NonHispanic / Deaths_Total,
-         deathperethunk = Deaths_Ethnicity_Unknown / Deaths_Total)
+         deathperethunk = Deaths_Ethnicity_Unknown / Deaths_Total) %>%
+  write.csv("Milestone4/covidrace")
 ```

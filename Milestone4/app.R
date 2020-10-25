@@ -8,7 +8,10 @@
 #
 
 library(shiny)
-
+library(tidyverse)
+pop_prop <- read_csv("population_propotion")
+covid_race <- read_csv("covidrace.csv",
+                       col_types = cols(State = col_factor()))
 # Define UI for application that draws a histogram
 ui <- navbarPage(
     "COVID Deaths as a Factor of Race and Ethnicity",
@@ -18,16 +21,25 @@ ui <- navbarPage(
                  sidebarLayout(
                      sidebarPanel(
                          selectInput(
-                             "plot_type",
-                             "Plot Type",
-                             c("Option A" = "a", "Option B" = "b")
-                         )),
-                     mainPanel(plotOutput("line_plot")))
-             )),
+                             "state",
+                             "State",
+                             c("AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT",
+                               "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID",
+                               "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", 
+                               "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND",
+                               "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK",
+                               "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX",
+                               "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")),
+                         dateInput("date", label = h3("Date input"), 
+                                   value = "2020-10-11")),
+                 mainPanel(
+                     plotOutput("casesprop")
+                 )))),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
-             p("Tour of the modeling choices you made and 
-              an explanation of why you made them")),
+             p("Right now, we're using a basic plot of the percentage of each 
+               state's COVID cases. The graph isn't really working but I want to
+               turn something in anyway.")),
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
@@ -53,16 +65,17 @@ ui <- navbarPage(
              p("My name is Ruy Martinez and I study Government at Harvard 
              You can reach me at ruymartinez@college.harvard.edu.")))
 
-# Define server logic required to draw a histogram
+# Define server logic required to draw a bar graph
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
+    output$casesprop <- renderPlot({
         # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
+        state <- switch(input$state)
+        date <- switch(input$date)
+        
+        barplot(height = c(Cases_Total, Cases_White, Cases_Black, 
+                           Cases_LatinX, Cases_Asian, Cases_AIAN, Cases_NHPI, 
+                           Cases_Multiracial, Cases_Other, Cases_Unknown))
     })
 }
 
