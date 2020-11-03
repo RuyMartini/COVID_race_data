@@ -20,6 +20,10 @@ pop <- read.csv("data/2010racepop.csv") %>%
          otherpercent = OTHER / TOTAL,
          mixedpercent = MIXED / TOTAL,
          latinopercent = LATINO / TOTAL) %>%
+  
+# These are calculating the percent, or proportion, of the population. This is
+# easier to graph and to understand compared to raw numbers.
+  
   write.csv("Milestone4/population_propotion")
 ```
 
@@ -30,7 +34,15 @@ covidrace <- read_csv("data/race_dat.csv",
                       col_types = cols(Cases_White = "i",
                                        Cases_Total = "i",
                                        State = col_factor())) %>%
+  
+# Column setting and making sure State is a factor, not a character. This lets
+# us rename the levels later when we graph.
+  
   mutate(Date = lubridate::ymd(Date)) %>%
+  
+# A date should be a date! Might turn this into a character later since the
+# selectors on Shiny are easier to understand if I do that.
+  
   mutate(caseper_white = Cases_White / Cases_Total,
          caseper_black = Cases_Black / Cases_Total,
          caseper_latino = Cases_LatinX / Cases_Total,
@@ -53,6 +65,30 @@ covidrace <- read_csv("data/race_dat.csv",
          deathperunkn = Deaths_Unknown / Deaths_Total,
          deathperhispanic = Deaths_Ethnicity_Hispanic / Deaths_Total,
          deathpernonhis = Deaths_Ethnicity_NonHispanic / Deaths_Total,
-         deathperethunk = Deaths_Ethnicity_Unknown / Deaths_Total) %>%
-  write.csv("Milestone4/covidrace")
+         deathperethunk = Deaths_Ethnicity_Unknown / Deaths_Total)
+
+# All the percentages! This is annoying but necessary to be able to graph our
+# data in a useful manner. I can then make a raw numbers graph later if I want.
+
+covid_race_cases <- covidrace %>%
+  select(Date:State, caseper_white:caseperunkn) %>%
+  pivot_longer(cols = caseper_white:caseperunkn, 
+               names_to = "race_c", values_to = "cases_r")
+
+# This is a ton of data, so it's easier to graph if we pivot longer one set at a
+# time. Joining these together will be a nightmare, but I'll deal with that
+# when I get to it.
+
+covid_ethnicity_cases <- covidrace %>%
+  select(Date:State, Cases_Ethnicity_Hispanic:Cases_Ethnicity_Unknown)
+
+covid_race_deaths <- covidrace %>%
+  select(Date:State, Deaths_Total:Deaths_Unknown)
+
+covid_ethnicity_deaths <- covidrace %>%
+  select(Date:State, Deaths_Ethnicity_Hispanic:Deaths_Ethnicity_Unknown)
+
+# These are all basically the same and will be pivoted in a similar fashion
+# later.
+
 ```

@@ -12,6 +12,15 @@ library(tidyverse)
 pop_prop <- read_csv("population_propotion")
 covid_race <- read_csv("covidrace.csv",
                        col_types = cols(State = col_factor()))
+
+covid_race_cases <- covid_race %>%
+    select(Date:State, caseper_white:caseperunkn) %>%
+    pivot_longer(cols = caseper_white:caseperunkn, 
+                 names_to = "race_c", values_to = "cases_r")
+
+# To simplify the manner for now, I pivoted in the ShinyApp. In the future,
+# this will hopefully be done in the Markdown section.
+
 # Define UI for application that draws a histogram
 ui <- navbarPage(
     "COVID Deaths as a Factor of Race and Ethnicity",
@@ -30,8 +39,12 @@ ui <- navbarPage(
                                "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK",
                                "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX",
                                "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")),
-                         dateInput("date", label = h3("Date input"), 
+                         dateInput("date", label = h3("Date Input"), 
                                    value = "2020-10-11")),
+                     
+# Is this annoying to type out? Yes. Is it necessary to be able to select all
+# 56 territories? Yes.
+                     
                  mainPanel(
                      plotOutput("casesprop")
                  )))),
@@ -69,13 +82,14 @@ ui <- navbarPage(
 server <- function(input, output) {
 
     output$casesprop <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        state <- switch(input$state)
-        date <- switch(input$date)
+        covid_race_cases %>%
+            filter(Date == input$date & State == input$state) %>%
+            ggplot(aes(x = race_c, y = cases_r)) +
+                geom_col()
         
-        barplot(height = c(Cases_Total, Cases_White, Cases_Black, 
-                           Cases_LatinX, Cases_Asian, Cases_AIAN, Cases_NHPI, 
-                           Cases_Multiracial, Cases_Other, Cases_Unknown))
+# Don't forget to do input$whatever to indicate that it's inside the app! Also
+# used col since a vector exists for y as opposed to an after_stat.
+        
     })
 }
 
