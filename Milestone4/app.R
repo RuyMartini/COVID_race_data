@@ -11,12 +11,21 @@ library(shiny)
 library(tidyverse)
 pop_prop <- read_csv("population_propotion")
 covid_race <- read_csv("covidrace.csv",
-                       col_types = cols(State = col_factor()))
+                       col_types = cols(State = col_factor())) %>%
+    as_tibble()
 
 covid_race_cases <- covid_race %>%
-    select(Date:State, caseper_white:caseperunkn) %>%
+    select(Date, State, caseper_white:caseperunkn) %>%
     pivot_longer(cols = caseper_white:caseperunkn, 
-                 names_to = "race_c", values_to = "cases_r")
+                 names_to = "race_c", values_to = "cases_r") %>%
+    mutate(race_c = as.factor(race_c) %>%
+               fct_recode("Asian" = "caseper_asian", "Black" = "caseper_black",
+                          "Latino" = "caseper_latino", "White" = "caseper_white",
+                          "AIAN" = "caseperaian", "Multiracial" = "casepermulti",
+                          "NHPI" = "casepernhpi", "Other" = "caseperother",
+                          "Unknown" = "caseperunkn"))
+
+
 
 # To simplify the manner for now, I pivoted in the ShinyApp. In the future,
 # this will hopefully be done in the Markdown section.
@@ -84,8 +93,8 @@ server <- function(input, output) {
     output$casesprop <- renderPlot({
         covid_race_cases %>%
             filter(Date == input$date & State == input$state) %>%
-            ggplot(aes(x = race_c, y = cases_r)) +
-                geom_col()
+            ggplot(aes(x = fct_reorder(race_c, cases_r), y = cases_r)) +
+                geom_col(fill = "blue")
         
 # Don't forget to do input$whatever to indicate that it's inside the app! Also
 # used col since a vector exists for y as opposed to an after_stat.
