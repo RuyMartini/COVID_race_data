@@ -24,7 +24,7 @@ pop <- read.csv("data/2010racepop.csv") %>%
 # These are calculating the percent, or proportion, of the population. This is
 # easier to graph and to understand compared to raw numbers.
   
-  write.csv("Milestone4/population_propotion")
+  write.csv("app_files/population_propotion")
 ```
 
 
@@ -99,6 +99,6 @@ covid_race_cases_deaths <- left_join(covid_race_cases, covid_race_deaths,
                                      by = c("Date", "State", "race")) %>%
   pivot_longer(cols = c("cases_r", "deaths_r"),
                names_to = "caseordeath", values_to = "number") %>%
-  saveRDS("Milestone4/covid_race_cases_deaths.RDS")
+  saveRDS("app_files/covid_race_cases_deaths.RDS")
 
 ```
