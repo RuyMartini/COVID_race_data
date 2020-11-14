@@ -73,7 +73,8 @@ covidrace <- read_csv("data/race_dat.csv",
 covid_race_cases <- covidrace %>%
   select(Date:State, caseper_white:caseperunkn) %>%
   pivot_longer(cols = caseper_white:caseperunkn, 
-               names_to = "race_c", values_to = "cases_r")
+               names_to = "race_c", values_to = "cases_r") %>%
+  mutate(race = str_remove(race_c, "caseper"))
 
 # This is a ton of data, so it's easier to graph if we pivot longer one set at a
 # time. Joining these together will be a nightmare, but I'll deal with that
@@ -83,12 +84,21 @@ covid_ethnicity_cases <- covidrace %>%
   select(Date:State, Cases_Ethnicity_Hispanic:Cases_Ethnicity_Unknown)
 
 covid_race_deaths <- covidrace %>%
-  select(Date:State, Deaths_Total:Deaths_Unknown)
+  select(Date:State, deathper_white:deathperunkn) %>%
+  pivot_longer(cols = deathper_white:deathperunkn,
+               names_to = "race_d", values_to = "deaths_r") %>%
+  mutate(race = str_remove(race_d, "deathper"))
 
 covid_ethnicity_deaths <- covidrace %>%
   select(Date:State, Deaths_Ethnicity_Hispanic:Deaths_Ethnicity_Unknown)
 
 # These are all basically the same and will be pivoted in a similar fashion
 # later.
+
+covid_race_cases_deaths <- left_join(covid_race_cases, covid_race_deaths,
+                                     by = c("Date", "State", "race")) %>%
+  pivot_longer(cols = c("cases_r", "deaths_r"),
+               names_to = "caseordeath", values_to = "number") %>%
+  saveRDS("Milestone4/covid_race_cases_deaths.RDS")
 
 ```

@@ -10,11 +10,10 @@
 library(shiny)
 library(tidyverse)
 pop_prop <- read_csv("population_propotion")
-covid_race <- read_csv("covidrace.csv",
-                       col_types = cols(State = col_factor())) %>%
-    as_tibble()
 
-covid_race_cases <- covid_race %>%
+covid_race <- read_csv("covidrace.csv")
+
+covid_race_cases_deaths <- covid_race %>%
     select(Date, State, caseper_white:caseperunkn) %>%
     pivot_longer(cols = caseper_white:caseperunkn, 
                  names_to = "race_c", values_to = "cases_r") %>%
@@ -25,7 +24,7 @@ covid_race_cases <- covid_race %>%
                           "NHPI" = "casepernhpi", "Other" = "caseperother",
                           "Unknown" = "caseperunkn"))
 
-
+covid_race_cases_deaths <- readRDS("covid_race_cases_deaths.RDS")
 
 # To simplify the manner for now, I pivoted in the ShinyApp. In the future,
 # this will hopefully be done in the Markdown section.
@@ -91,10 +90,10 @@ ui <- navbarPage(
 server <- function(input, output) {
 
     output$casesprop <- renderPlot({
-        covid_race_cases %>%
+        covid_race_cases_deaths %>%
             filter(Date == input$date & State == input$state) %>%
-            ggplot(aes(x = fct_reorder(race_c, cases_r), y = cases_r)) +
-                geom_col(fill = "blue")
+            ggplot(aes(x = race, y = number, fill = caseordeath)) +
+                geom_col()
         
 # Don't forget to do input$whatever to indicate that it's inside the app! Also
 # used col since a vector exists for y as opposed to an after_stat.
