@@ -15,14 +15,9 @@ covid_race <- read_csv("covidrace.csv")
 
 covid_race_cases_deaths <- covid_race %>%
     select(Date, State, caseper_white:caseperunkn) %>%
+    filter(State != c("AS", "GU")) %>%
     pivot_longer(cols = caseper_white:caseperunkn, 
-                 names_to = "race_c", values_to = "cases_r") %>%
-    mutate(race_c = as.factor(race_c) %>%
-               fct_recode("Asian" = "caseper_asian", "Black" = "caseper_black",
-                          "Latino" = "caseper_latino", "White" = "caseper_white",
-                          "AIAN" = "caseperaian", "Multiracial" = "casepermulti",
-                          "NHPI" = "casepernhpi", "Other" = "caseperother",
-                          "Unknown" = "caseperunkn"))
+                 names_to = "race_c", values_to = "cases_r")
 
 covid_race_cases_deaths <- readRDS("covid_race_cases_deaths.RDS")
 
@@ -32,7 +27,7 @@ covid_race_cases_deaths <- readRDS("covid_race_cases_deaths.RDS")
 # Define UI for application that draws a histogram
 ui <- navbarPage(
     "COVID Deaths as a Factor of Race and Ethnicity",
-    tabPanel("Model",
+    tabPanel("Data",
              fluidPage(
                  titlePanel("COVID Cases Proportionalized"),
                  sidebarLayout(
@@ -40,8 +35,8 @@ ui <- navbarPage(
                          selectInput(
                              "state",
                              "State",
-                             c("AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT",
-                               "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID",
+                             c("AK", "AL", "AR", "AZ", "CA", "CO", "CT",
+                               "DC", "DE", "FL", "GA", "HI", "IA", "ID",
                                "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", 
                                "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND",
                                "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK",
@@ -56,8 +51,11 @@ ui <- navbarPage(
                  mainPanel(
                      plotOutput("casesprop")
                  )))),
+    tabPanel("Model",
+             titlePanel("Predictive Model"),
+             p("This is the place where the predictive model will go")),
     tabPanel("Discussion",
-             titlePanel("Discussion Title"),
+             titlePanel("Discussion"),
              p("Right now, we're using a basic plot of the percentage of each 
                state's COVID cases. The graph isn't really working but I want to
                turn something in anyway.")),
@@ -93,13 +91,28 @@ server <- function(input, output) {
         covid_race_cases_deaths %>%
             filter(Date == input$date & State == input$state) %>%
             ggplot(aes(x = race, y = number, fill = caseordeath)) +
-                geom_col()
+                geom_col(position = "dodge") +
+                scale_fill_manual(name = "Type",
+                                  labels = c("Case", "Death"),
+                                  values = c("lightblue", "salmon")) +
+                scale_x_discrete(labels = c("Asian", "Black", "Latino", "White",
+                                            "AIAN", "Multiracial", "NHPI", 
+                                            "Other", "Unknown")) +
+                labs(title = "COVID Cases and Deaths Proportionalized",
+                     subtitle = "People of color have worse outcomes. 
+Missing data makes it hard to tell.",
+                     x = "Race",
+                     y = "Percent of Total",
+                     caption = "Source: COVID Tracking Project at The Atlantic") +
+                theme_classic() +
+                scale_y_continuous(labels = scales::percent) }
+        )}
+            
         
 # Don't forget to do input$whatever to indicate that it's inside the app! Also
 # used col since a vector exists for y as opposed to an after_stat.
         
-    })
-}
+    
 
 # Run the application 
 shinyApp(ui = ui, server = server)
