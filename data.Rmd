@@ -20,11 +20,12 @@ pop <- read.csv("data/2010racepop.csv") %>%
          otherpercent = OTHER / TOTAL,
          mixedpercent = MIXED / TOTAL,
          latinopercent = LATINO / TOTAL) %>%
+  pivot_longer(cols = whitepercent:latinopercent, 
+               names_to = "race", values_to = "proportion") %>%
+  saveRDS("app_files/population_proportions.RDS")
   
 # These are calculating the percent, or proportion, of the population. This is
 # easier to graph and to understand compared to raw numbers.
-  
-  write.csv("app_files/population_propotion")
 ```
 
 

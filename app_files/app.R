@@ -9,15 +9,11 @@
 
 library(shiny)
 library(tidyverse)
-pop_prop <- read_csv("population_propotion")
-
-covid_race <- read_csv("covidrace.csv")
-
-covid_race_cases_deaths <- covid_race %>%
-    select(Date, State, caseper_white:caseperunkn) %>%
-    filter(State != c("AS", "GU")) %>%
-    pivot_longer(cols = caseper_white:caseperunkn, 
-                 names_to = "race_c", values_to = "cases_r")
+pop_prop <- readRDS("population_proportions.RDS") %>%
+    mutate(race = as_factor(race) %>%
+               fct_relevel("asianpercent", "blackpercent", "latinopercent", 
+                           "whitepercent", "aianpercent", "mixedpercent", 
+                           "nhpipercent", "otherpercent"))
 
 covid_race_cases_deaths <- readRDS("covid_race_cases_deaths.RDS")
 
@@ -33,24 +29,48 @@ ui <- navbarPage(
                  sidebarLayout(
                      sidebarPanel(
                          selectInput(
-                             "state",
-                             "State",
-                             c("AK", "AL", "AR", "AZ", "CA", "CO", "CT",
-                               "DC", "DE", "FL", "GA", "HI", "IA", "ID",
-                               "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", 
-                               "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND",
-                               "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK",
-                               "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX",
-                               "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY")),
+                                     "state",
+                                     "State",
+                                     c("AK", "AL", "AR", "AZ", "CA", "CO", "CT",
+                                       "DC", "DE", "FL", "GA", "HI", "IA", "ID",
+                                       "IL", "IN", "KS", "KY", "LA", "MA", "MD", 
+                                       "ME", "MI", "MN", "MO", "MS", "MT",
+                                       "NC", "ND", "NE", "NH", "NJ", "NM", "NV",
+                                       "NY", "OH", "OK", "OR", "PA", "RI",
+                                       "SC", "SD", "TN", "TX", "UT", "VA",
+                                       "VT", "WA", "WI", "WV", "WY"),
+                                     selected = "WY"),
                          dateInput("date", label = h3("Date Input"), 
-                                   value = "2020-10-11")),
+                                   value = "2020-10-11"),
+                         selectInput("statepop",
+                                     "STATE",
+                                     c("AK", "AL", "AR", "AZ", "CA", "CO", "CT",
+                                       "DC", "DE", "FL", "GA", "HI", "IA", "ID",
+                                       "IL", "IN", "KS", "KY", "LA", "MA", "MD", 
+                                       "ME", "MI", "MN", "MO", "MS", "MT",
+                                       "NC", "ND", "NE", "NH", "NJ", "NM", "NV",
+                                       "NY", "OH", "OK", "OR", "PA", "RI",
+                                       "SC", "SD", "TN", "TX", "UT", "VA",
+                                       "VT", "WA", "WI", "WV", "WY"),
+                                     selected = "WY")),
                      
 # Is this annoying to type out? Yes. Is it necessary to be able to select all
 # 56 territories? Yes.
                      
-                 mainPanel(
-                     plotOutput("casesprop")
-                 )))),
+                 mainPanel(plotOutput("casesprop"),
+                           plotOutput("popprop"))),
+                 p("It should be noted that Guam, American Samoa, the Mariana 
+                 Islands, Puerto Rico, and the Virgin Islands, were taken out 
+                 from the presented data due to lacking adequate data. 
+                 Furthermore, there were issues with a prevalence of \"Unknown\"
+                 data which may muddy results. However, I feel it would be 
+                 misrepresenting the given data to omit or try to mathematically
+                 resolve these unknown numbers. If 40% of the cases did not 
+                 specify a race, then that is what it is, and making assumptions
+                 about that is not helpful, and may in fact mislead those 
+                 seeking to draw conclusions. If anything, this should speak to 
+                 the dearth of data being collected of this modern pandemic that 
+                has killed hundreds of thousands of people in the US alone."))),
     tabPanel("Model",
              titlePanel("Predictive Model"),
              p("This is the place where the predictive model will go")),
@@ -103,10 +123,25 @@ server <- function(input, output) {
 Missing data makes it hard to tell.",
                      x = "Race",
                      y = "Percent of Total",
-                     caption = "Source: COVID Tracking Project at The Atlantic") +
+                   caption = "Source: COVID Tracking Project at The Atlantic") +
                 theme_classic() +
-                scale_y_continuous(labels = scales::percent) }
-        )}
+                scale_y_continuous(labels = scales::percent)})
+    output$popprop <- renderPlot({
+        pop_prop %>%
+            filter(STATE == input$statepop) %>%
+            ggplot(aes(x = race, y = proportion)) +
+                geom_col(fill = "lightblue") +
+                theme_classic() +
+                scale_y_continuous(labels = scales::percent) +
+                scale_x_discrete(labels = c("Asian", "Black", "Latino", "White",
+                                            "AIAN", "Multiracial", "NHPI", 
+                                            "Other")) +
+                labs(title = "Race as a Proportion of the Population (2010)",
+                     x = "Race",
+                     y = "Percent of Total",
+                     caption = "Source: United States Census Bureau (2010)")
+            
+    })}
             
         
 # Don't forget to do input$whatever to indicate that it's inside the app! Also
