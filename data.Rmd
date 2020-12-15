@@ -25,7 +25,9 @@ pop <- read.csv("data/2010racepop.csv") %>%
   saveRDS("app_files/population_proportions.RDS")
   
 # These are calculating the percent, or proportion, of the population. This is
-# easier to graph and to understand compared to raw numbers.
+# easier to graph and to understand compared to raw numbers. We save this
+# as an RDS to not deal with the readr mess in terms of CSVs. It's also just
+# a lot cleaner for people to download.
 ```
 
 
@@ -84,11 +86,16 @@ covid_race_cases <- covidrace %>%
 covid_ethnicity_cases <- covidrace %>%
   select(Date:State, Cases_Ethnicity_Hispanic:Cases_Ethnicity_Unknown)
 
+# A bit of useful help if someone wants to begin going through the ethnicity 
+# aspect of the data!
+
 covid_race_deaths <- covidrace %>%
   select(Date:State, deathper_white:deathperunkn) %>%
   pivot_longer(cols = deathper_white:deathperunkn,
                names_to = "race_d", values_to = "deaths_r") %>%
   mutate(race = str_remove(race_d, "deathper"))
+
+# We are pivotting all the deaths with only the racial columns, not ethnicity.
 
 covid_ethnicity_deaths <- covidrace %>%
   select(Date:State, Deaths_Ethnicity_Hispanic:Deaths_Ethnicity_Unknown)
@@ -101,5 +108,8 @@ covid_race_cases_deaths <- left_join(covid_race_cases, covid_race_deaths,
   pivot_longer(cols = c("cases_r", "deaths_r"),
                names_to = "caseordeath", values_to = "number") %>%
   saveRDS("app_files/covid_race_cases_deaths.RDS")
+
+# The data from the race cases and deaths are now joined for one super long
+# table that we can utilize for our very interactive data visualization!
 
 ```
