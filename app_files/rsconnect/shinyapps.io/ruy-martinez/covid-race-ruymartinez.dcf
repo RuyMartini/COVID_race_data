@@ -5,8 +5,8 @@ account: ruy-martinez
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3364096
-bundleId: 3953333
+bundleId: 3990303
 url: https://ruy-martinez.shinyapps.io/covid-race-ruymartinez/
-when: 1607316926.06943
+when: 1608003093.3612
 asMultiple: FALSE
 asStatic: FALSE
